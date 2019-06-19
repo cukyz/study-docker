@@ -256,3 +256,135 @@ cuky@cuky:~/dev/study-docker/stack$ docker container exec -it manager docker sta
 Creating service ingress_haproxy
 ```
 
+# 4장. 스웜을 이용한 실전 애플리케이션 개발
+## 4.1. 웹 애플리케이션 구성
+
+## 4.2. MySQL 서비스 구축
+
+### 빌드 및 스웜 클러스터에서 사용하기
+```
+cuky@cuky:~/dev/tododb$ docker image build -t ch04/tododb:latest .
+Sending build context to Docker daemon  116.2kB
+Step 1/16 : FROM mysql:5.7
+5.7: Pulling from library/mysql
+fc7181108d40: Pull complete 
+787a24c80112: Pull complete 
+a08cb039d3cd: Pull complete 
+4f7d35eb5394: Pull complete 
+5aa21f895d95: Pull complete 
+a742e211b7a2: Pull complete 
+0163805ad937: Pull complete 
+62d0ebcbfc71: Pull complete 
+559856d01c93: Pull complete 
+c849d5f46e83: Pull complete 
+f114c210789a: Pull complete 
+Digest: sha256:c3594c6528b31c6222ba426d836600abd45f554d078ef661d3c882604c70ad0a
+Status: Downloaded newer image for mysql:5.7
+ ---> a1aa4f76fab9
+Step 2/16 : RUN apt-get update
+ ---> Running in d8057bd8d2ce
+Get:1 http://repo.mysql.com/apt/debian stretch InRelease [21.7 kB]
+Get:5 http://repo.mysql.com/apt/debian stretch/mysql-5.7 amd64 Packages [5716 B]
+Ign:2 http://cdn-fastly.deb.debian.org/debian stretch InRelease
+Get:3 http://cdn-fastly.deb.debian.org/debian stretch-updates InRelease [91.0 kB]
+Get:4 http://security-cdn.debian.org/debian-security stretch/updates InRelease [94.3 kB]
+Get:6 http://cdn-fastly.deb.debian.org/debian stretch Release [118 kB]
+Get:7 http://cdn-fastly.deb.debian.org/debian stretch Release.gpg [2434 B]
+Get:8 http://security-cdn.debian.org/debian-security stretch/updates/main amd64 Packages [499 kB]
+Get:9 http://cdn-fastly.deb.debian.org/debian stretch-updates/main amd64 Packages [27.2 kB]
+Get:10 http://cdn-fastly.deb.debian.org/debian stretch/main amd64 Packages [7082 kB]
+Fetched 7941 kB in 7s (1063 kB/s)
+Reading package lists...
+.
+.
+.
+.
+.
+Step 9/16 : COPY add-server-id.sh /usr/local/bin/
+ ---> d827352da9ff
+Step 10/16 : COPY etc/mysql/mysql.conf.d/mysqld.cnf /etc/mysql/mysql.conf.d/
+ ---> 55964a5978c5
+Step 11/16 : COPY etc/mysql/conf.d/mysql.cnf /etc/mysql/conf.d/
+ ---> 3cd44d4dfdbf
+Step 12/16 : COPY prepare.sh /docker-entrypoint-initdb.d
+ ---> 44a9929d0823
+Step 13/16 : COPY init-data.sh /usr/local/bin/
+ ---> 26c9e0602250
+Step 14/16 : COPY sql /sql
+ ---> 7314560ddaff
+Step 15/16 : ENTRYPOINT [   "prehook",     "add-server-id.sh",     "--",   "docker-entrypoint.sh" ]
+ ---> Running in d2326624fe6c
+Removing intermediate container d2326624fe6c
+ ---> d8fd8b8ba222
+Step 16/16 : CMD ["mysqld"]
+ ---> Running in 4b0599ff2630
+Removing intermediate container 4b0599ff2630
+ ---> e691a406b435
+Successfully built e691a406b435
+Successfully tagged ch04/tododb:latest
+
+```
+
+
+#### 이미지 registry 등록 (tag, push)
+```
+cuky@cuky:~/dev/tododb$ docker image tag ch04/tododb:latest localhost:5000/ch04/tododb:latest
+cuky@cuky:~/dev/tododb$ 
+cuky@cuky:~/dev/tododb$ 
+cuky@cuky:~/dev/tododb$ 
+cuky@cuky:~/dev/tododb$ docker image push localhost:5000/ch04/tododb:latest
+The push refers to repository [localhost:5000/ch04/tododb]
+b78ae42b3a42: Pushed 
+3389cb3012bd: Pushed 
+a34ce42f2f0f: Pushed 
+ed4f470f5e72: Pushed 
+a40c726235a8: Pushed 
+89cff9dff1b5: Pushed 
+627b81839d00: Pushed 
+4657d31ba1bd: Pushed 
+f985ccf437ca: Pushed 
+e9651980f89e: Pushed 
+1e9b0de5a957: Pushed 
+b7ca84812a9e: Pushed 
+b68cb4281fa3: Pushed 
+fe502c068612: Pushed 
+099a334da0eb: Pushed 
+013702f09688: Pushed 
+de99e027e630: Pushed 
+4a6063139efa: Pushed 
+7dd55886f8d3: Pushed 
+17d2cfdb93fc: Pushed 
+cf1d44aef62d: Pushed 
+b983f63f4c27: Pushed 
+b686f68f8333: Pushed 
+cf5b3c6798f7: Pushed 
+latest: digest: sha256:574e4780f01f2b38a3b4de415b1c1f664f13ffc208e09e817a451e0b5ffca068 size: 5334
+
+```
+
+### 스웜에서 마스터 및 슬레이브 실행
+todo-mysql.yml에 정의된 서비스를 todo_mysql 스택으로 manager 컨테이너에 배포.  
+```
+cuky@cuky:~/dev/study-docker$ docker container exec -it manager docker stack deploy -c /stack/todo-mysql.yml todo_mysql
+Creating service todo_mysql_master
+Creating service todo_mysql_slave
+
+```
+
+배포확인.  
+```
+cuky@cuky:~/dev/study-docker$ docker container exec -it manager \
+> docker service ls
+ID                  NAME                MODE                REPLICAS            IMAGE                               PORTS
+upmc74mds1bm        echo_api            replicated          3/3                 registry:5000/example/echo:latest   
+muox61bzuq81        echo_nginx          replicated          3/3                 gihyodocker/nginx-proxy:latest      
+slplzp0h24oo        ingress_haproxy     global              1/1                 dockercloud/haproxy:latest          *:80->80/tcp, *:1936->1936/tcp
+2ezcara97fjr        todo_mysql_master   replicated          0/1                 registry:5000/ch04/tododb:latest    
+d43ku8mfwxsf        todo_mysql_slave    replicated          0/2                 registry:5000/ch04/tododb:latest    
+zqdhc7uxsjmy        visualizer_app      global              1/1                 dockersamples/visualizer:latest     *:9000->8080/tcp
+cuky@cuky:~/dev/study-docker$ 
+
+```
+
+
+## 4.3. API 서비스 구축
