@@ -201,7 +201,9 @@ vonee6zze4u9        echo.4              registry:5000/example/echo:latest   731b
 		
 #### 스택 배포하기 (p119)
 ```
-docker container exec -it manager docker stack deploy -c /stack/ch03-weapi.yml echo
+cuky@cuky:~/dev/study-docker$ docker container exec -it manager docker stack deploy -c /stack/ch03-webapi.yml echo
+Creating service echo_nginx
+Creating service echo_api
 ```
 	
 #### 배포된 스택 확인하기 (p120)
