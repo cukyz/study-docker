@@ -110,15 +110,30 @@ Registry 컨테이너에 도커 이미지 등록 (p113)
 1. Image에 tag를 붙인다.
 2. push한다.
 ```
-docker image tag ~~~~~~~~~~~
-docker image push ~~
+cuky@cuky:~/dev/study-docker$ docker image tag example/echo:latest localhost:5000/example/echo:latest
+cuky@cuky:~/dev/study-docker$ docker image push localhost:5000/example/echo:latest
+The push refers to repository [localhost:5000/example/echo]
+0f2827fdffbe: Mounted from study01/echo 
+a808b3bcd4bf: Mounted from study01/echo 
+186d94bd2c62: Mounted from study01/echo 
+24a9d20e5bee: Mounted from study01/echo 
+e7dc337030ba: Mounted from study01/echo 
+920961b94eb3: Mounted from study01/echo 
+fa0c3f992cbd: Mounted from study01/echo 
+ce6466f43b11: Mounted from study01/echo 
+719d45669b35: Mounted from study01/echo 
+3b10514a95be: Mounted from study01/echo 
+latest: digest: sha256:715b39ea535151213099f586eb206a923d0cec017f4396fcccec9c11d89ab641 size: 2418
 ```
 		
 #### 도커 이미지 내려 받기 (p114)
-Worker 컨테이너가 registry 컨테이너로부터 도커 이미지를 내려 받을 수 있는지 확인
+Worker 컨테이너가 registry 컨테이너로부터 도커 이미지를 내려 받을 수 있는지 확인  
+docker image pull 
 ```
-docker image pull ~~~~~
-docker container exec -it worker01 docker image pull registry:5000/study01/echo:latest
+cuky@cuky:~/dev/study-docker$ docker container exec -it worker01 docker image pull registry:5000/example/echo:latest
+latest: Pulling from example/echo
+Digest: sha256:715b39ea535151213099f586eb206a923d0cec017f4396fcccec9c11d89ab641
+Status: Image is up to date for registry:5000/example/echo:latest
 ```
 			
 ### 3.5.2. 서비스
@@ -126,23 +141,44 @@ docker container exec -it worker01 docker image pull registry:5000/study01/echo:
 
 서비스 만들기(p115)
 ```
- docker container exec -it manager docker service create --replicas 1 --publish 8000:8080 --name echo ~~~
+cuky@cuky:~/dev/study-docker$ docker container exec -it manager docker service create --replicas 1 --publish 8000:8080 --name echo registry:5000/example/echo:latest
+eh3sh32u31il4s9bhe1ay3gz2
+overall progress: 1 out of 1 tasks 
+1/1: running   [==================================================>] 
+verify: Service converged 
 ```
 		
 서비스 확인(p116)
 ```
- docker container exec -it manager docker service ls
+cuky@cuky:~/dev/study-docker$ docker container exec -it manager docker service ls
+ID                  NAME                MODE                REPLICAS            IMAGE                               PORTS
+eh3sh32u31il        echo                replicated          1/1                 registry:5000/example/echo:latest   *:8000->8080/tcp
 ```	
 
 스케일아웃(p116)
+docker service scale 명령으로 서비스의 컨테이너 수를 조정
 ```
- docker service scale 명령으로 서비스의 컨테이너 수를 조정
- docker container execd -it manager docker service scale echo=6
+cuky@cuky:~/dev/study-docker$ docker container exec -it manager docker service scale echo=6
+echo scaled to 6
+overall progress: 6 out of 6 tasks 
+1/6: running   [==================================================>] 
+2/6: running   [==================================================>] 
+3/6: running   [==================================================>] 
+4/6: running   [==================================================>] 
+5/6: running   [==================================================>] 
+6/6: running   [==================================================>] 
+verify: Service converged 
 ```
 	
 확인(p116)
 ```
- docker container exec -it manager docker service ps echo | grep Run
+cuky@cuky:~/dev/study-docker$ docker container exec -it manager docker service ps echo | grep Run
+xaa4udz473k8        echo.1              registry:5000/example/echo:latest   ccd45673f4b5        Running             Running about a minute ago                       
+l4lyzwqmr274        echo.2              registry:5000/example/echo:latest   739657badf61        Running             Running 20 seconds ago                           
+7idn5pgno5eb        echo.3              registry:5000/example/echo:latest   ccd45673f4b5        Running             Running 21 seconds ago                           
+vonee6zze4u9        echo.4              registry:5000/example/echo:latest   731b9c121e31        Running             Running 21 seconds ago                           
+9iqfdveqf8rm        echo.5              registry:5000/example/echo:latest   7a4cb7c4aedd        Running             Running 21 seconds ago                           
+60a76kgxhwln        echo.6              registry:5000/example/echo:latest   739657badf61        Running             Running 19 seconds ago      
 ```
 
 삭제 (p117)
@@ -169,3 +205,5 @@ docker container exec -it manager docker stack deploy -c /stack/ch03-weapi.yml e
 ```
 	
 #### 배포된 스택 확인하기 (p120)
+
+
