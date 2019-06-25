@@ -240,7 +240,19 @@ Removing service echo_nginx
 ```
 
 ### 3.5.4 스웜 클러스터 외부에서 서비스 사용하기
+HAProxy를 사용하여 스워 클러스터 외부에서 echo_nginx 서비스 접근.  
+localhost:8000 -> HAProxy 80 -> 
+
+#### ch03-webapi.yml을 스택echo로 다시 배포
+```
+cuky@cuky:~/dev/study-docker/stack$ docker container exec -it manager docker stack deploy -c /stack/ch03-webapi.yml echo
+Updating service echo_api (id: upmc74mds1bmoyxdd0ap5sa9f)
+Updating service echo_nginx (id: muox61bzuq81vfohr246nb381)
 ```
 
+#### ch03-ingress.yml을 스택 ingress로 배포
+```
+cuky@cuky:~/dev/study-docker/stack$ docker container exec -it manager docker stack deploy -c /stack/ch03-ingress.yml ingress
+Creating service ingress_haproxy
 ```
 
