@@ -207,5 +207,10 @@ Creating service echo_api
 ```
 	
 #### 배포된 스택 확인하기 (p120)
-
+```
+cuky@cuky:~/dev/study-docker$ docker container exec -it manager docker stack services echo
+ID                  NAME                MODE                REPLICAS            IMAGE                               PORTS
+6nynot2d1p00        echo_nginx          replicated          3/3                 gihyodocker/nginx-proxy:latest      
+7ucjjpo68aik        echo_api            replicated          3/3                 registry:5000/example/echo:latest   
+```
 
