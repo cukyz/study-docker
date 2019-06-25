@@ -232,3 +232,15 @@ cuky@cuky:~/dev/study-docker$ docker container exec -it manager docker stack dep
 Creating network visualizer_default
 Creating service visualizer_app
 ```
+#### 스택 삭제하기
+```
+cuky@cuky:~/dev/study-docker/stack$ docker container exec -it manager docker stack rm echo
+Removing service echo_api
+Removing service echo_nginx
+```
+
+### 3.5.4 스웜 클러스터 외부에서 서비스 사용하기
+```
+
+```
+
