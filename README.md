@@ -214,3 +214,14 @@ ID                  NAME                MODE                REPLICAS            
 7ucjjpo68aik        echo_api            replicated          3/3                 registry:5000/example/echo:latest   
 ```
 
+#### 스택에 뱊된 컨테이너 확인하기
+```
+cuky@cuky:~/dev/study-docker$ docker container exec -it manager docker stack ps echo
+ID                  NAME                IMAGE                               NODE                DESIRED STATE       CURRENT STATE            ERROR               PORTS
+yj43qbggxy3g        echo_api.1          registry:5000/example/echo:latest   4236174bcf06        Running             Running 36 minutes ago                       
+2aj6iodumhwe        echo_nginx.1        gihyodocker/nginx-proxy:latest      4236174bcf06        Running             Running 36 minutes ago                       
+swmp4gmq6t3h        echo_api.2          registry:5000/example/echo:latest   5baf1b2ea0ff        Running             Running 36 minutes ago                       
+ywl5t09d7uhu        echo_nginx.2        gihyodocker/nginx-proxy:latest      5c442309ea00        Running             Running 36 minutes ago                       
+ti787eyutjj0        echo_api.3          registry:5000/example/echo:latest   5c442309ea00        Running             Running 36 minutes ago                       
+w0nksb4mjyaf        echo_nginx.3        gihyodocker/nginx-proxy:latest      20cc15285958        Running             Running 36 minutes ago     
+```
