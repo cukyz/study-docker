@@ -388,3 +388,194 @@ cuky@cuky:~/dev/study-docker$
 
 
 ## 4.3. API 서비스 구축
+
+
+
+
+# 5장. Kubernetes
+
+## 설치
+신뢰할수 있는 apt key 추가  
+repository 추가 및 설치
+```
+cuky@cuky:~/dev$ sudo apt install apt-transport-https
+[sudo] cuky의 암호: 
+패키지 목록을 읽는 중입니다... 완료
+의존성 트리를 만드는 중입니다       
+상태 정보를 읽는 중입니다... 완료
+패키지 apt-transport-https는 이미 최신 버전입니다 (1.6.11).
+0개 업그레이드, 0개 새로 설치, 0개 제거 및 393개 업그레이드 안 함.
+cuky@cuky:~/dev$ 
+cuky@cuky:~/dev$ 
+cuky@cuky:~/dev$ 
+cuky@cuky:~/dev$ 
+cuky@cuky:~/dev$ 
+cuky@cuky:~/dev$ curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add
+OK
+cuky@cuky:~/dev$ 
+cuky@cuky:~/dev$ sudo add-apt-repository "deb https://apt.kubernetes.io/ kubernetes-$(lsb_release -cs) main"
+기존:1 https://download.docker.com/linux/ubuntu bionic InRelease
+기존:2 http://kr.archive.ubuntu.com/ubuntu bionic InRelease                                                                                   
+받기:3 http://kr.archive.ubuntu.com/ubuntu bionic-updates InRelease [88.7 kB]                                                                 
+받기:4 http://kr.archive.ubuntu.com/ubuntu bionic-backports InRelease [74.6 kB]                                                               
+받기:5 http://kr.archive.ubuntu.com/ubuntu bionic-updates/main amd64 Packages [678 kB]                                                        
+받기:7 http://security.ubuntu.com/ubuntu bionic-security InRelease [88.7 kB]                                                                  
+받기:8 http://kr.archive.ubuntu.com/ubuntu bionic-updates/main i386 Packages [555 kB]                
+받기:9 http://kr.archive.ubuntu.com/ubuntu bionic-updates/main amd64 DEP-11 Metadata [283 kB]   
+받기:10 http://kr.archive.ubuntu.com/ubuntu bionic-updates/main DEP-11 48x48 Icons [66.7 kB]                                                  
+무시:6 https://packages.cloud.google.com/apt kubernetes-bionic InRelease                                                                      
+받기:11 http://kr.archive.ubuntu.com/ubuntu bionic-updates/main DEP-11 64x64 Icons [134 kB]                                                   
+받기:12 http://kr.archive.ubuntu.com/ubuntu bionic-updates/universe i386 Packages [953 kB]                                                    
+받기:14 http://kr.archive.ubuntu.com/ubuntu bionic-updates/universe amd64 Packages [969 kB]                                                   
+오류:13 https://packages.cloud.google.com/apt kubernetes-bionic Release                                                    
+  404  Not Found [IP: 172.217.27.78 443]
+받기:15 http://security.ubuntu.com/ubuntu bionic-security/main amd64 DEP-11 Metadata [24.1 kB]   
+받기:16 http://kr.archive.ubuntu.com/ubuntu bionic-updates/universe amd64 DEP-11 Metadata [250 kB]
+받기:17 http://kr.archive.ubuntu.com/ubuntu bionic-updates/universe DEP-11 48x48 Icons [198 kB]          
+받기:18 http://security.ubuntu.com/ubuntu bionic-security/main DEP-11 48x48 Icons [10.4 kB]                  
+받기:19 http://kr.archive.ubuntu.com/ubuntu bionic-updates/universe DEP-11 64x64 Icons [426 kB]
+받기:20 http://security.ubuntu.com/ubuntu bionic-security/main DEP-11 64x64 Icons [31.7 kB]
+받기:21 http://security.ubuntu.com/ubuntu bionic-security/universe amd64 DEP-11 Metadata [41.3 kB] 
+받기:22 http://kr.archive.ubuntu.com/ubuntu bionic-updates/multiverse amd64 DEP-11 Metadata [2,468 B]      
+받기:23 http://kr.archive.ubuntu.com/ubuntu bionic-backports/universe amd64 DEP-11 Metadata [7,224 B]             
+받기:24 http://security.ubuntu.com/ubuntu bionic-security/universe DEP-11 48x48 Icons [16.4 kB]                   
+받기:25 http://security.ubuntu.com/ubuntu bionic-security/universe DEP-11 64x64 Icons [105 kB]
+받기:26 http://security.ubuntu.com/ubuntu bionic-security/multiverse amd64 DEP-11 Metadata [2,464 B]
+패키지 목록을 읽는 중입니다... 완료                                    
+E: The repository 'https://apt.kubernetes.io kubernetes-bionic Release' does not have a Release file.
+N: Updating from such a repository can't be done securely, and is therefore disabled by default.
+N: See apt-secure(8) manpage for repository creation and user configuration details.
+
+```
+
+```
+cuky@cuky:~/dev$ sudo apt update
+기존:1 http://kr.archive.ubuntu.com/ubuntu bionic InRelease
+기존:2 http://kr.archive.ubuntu.com/ubuntu bionic-updates InRelease                                                           
+기존:3 https://download.docker.com/linux/ubuntu bionic InRelease                                                              
+기존:4 http://kr.archive.ubuntu.com/ubuntu bionic-backports InRelease                                                         
+기존:6 http://security.ubuntu.com/ubuntu bionic-security InRelease                                                            
+무시:5 https://packages.cloud.google.com/apt kubernetes-bionic InRelease                         
+오류:7 https://packages.cloud.google.com/apt kubernetes-bionic Release
+  404  Not Found [IP: 172.217.27.78 443]
+패키지 목록을 읽는 중입니다... 완료
+E: The repository 'https://apt.kubernetes.io kubernetes-bionic Release' does not have a Release file.
+N: Updating from such a repository can't be done securely, and is therefore disabled by default.
+N: See apt-secure(8) manpage for repository creation and user configuration details.
+```
+
+
+### Master 노드 초기화
+가장 먼저 할 일은 Master 노드 초기화   
+Master 노드를 초기화 할 때 Pod Network에 따라 초기화 코드가 달라질 수 있음. Pod Network를 flannel으로 지정하여 초기화 함. 
+종류 별 Pod Network 사용 방법: https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/#pod-network
+
+브릿지되어 있는 ipv4를 iptable로 전달
+```
+root@cuky:/usr/local/bin# sudo sysctl net.bridge.bridge-nf-call-iptables=1
+net.bridge.bridge-nf-call-iptables = 1
+root@cuky:/usr/local/bin# 
+```
+
+
+Master 노드 초기화
+```
+root@cuky:/usr/local/bin# sudo kubeadm init --pod-network-cidr=10.244.0.0/16
+[init] Using Kubernetes version: v1.15.0
+[preflight] Running pre-flight checks
+	[WARNING IsDockerSystemdCheck]: detected "cgroupfs" as the Docker cgroup driver. The recommended driver is "systemd". Please follow the guide at https://kubernetes.io/docs/setup/cri/
+[preflight] Pulling images required for setting up a Kubernetes cluster
+[preflight] This might take a minute or two, depending on the speed of your internet connection
+[preflight] You can also perform this action in beforehand using 'kubeadm config images pull'
+
+
+
+[kubelet-start] Writing kubelet environment file with flags to file "/var/lib/kubelet/kubeadm-flags.env"
+[kubelet-start] Writing kubelet configuration to file "/var/lib/kubelet/config.yaml"
+[kubelet-start] Activating the kubelet service
+[certs] Using certificateDir folder "/etc/kubernetes/pki"
+[certs] Generating "front-proxy-ca" certificate and key
+[certs] Generating "front-proxy-client" certificate and key
+[certs] Generating "etcd/ca" certificate and key
+[certs] Generating "etcd/server" certificate and key
+[certs] etcd/server serving cert is signed for DNS names [cuky localhost] and IPs [192.168.42.229 127.0.0.1 ::1]
+[certs] Generating "etcd/healthcheck-client" certificate and key
+[certs] Generating "etcd/peer" certificate and key
+[certs] etcd/peer serving cert is signed for DNS names [cuky localhost] and IPs [192.168.42.229 127.0.0.1 ::1]
+[certs] Generating "apiserver-etcd-client" certificate and key
+[certs] Generating "ca" certificate and key
+[certs] Generating "apiserver" certificate and key
+[certs] apiserver serving cert is signed for DNS names [cuky kubernetes kubernetes.default kubernetes.default.svc kubernetes.default.svc.cluster.local] and IPs [10.96.0.1 192.168.42.229]
+[certs] Generating "apiserver-kubelet-client" certificate and key
+[certs] Generating "sa" key and public key
+[kubeconfig] Using kubeconfig folder "/etc/kubernetes"
+[kubeconfig] Writing "admin.conf" kubeconfig file
+[kubeconfig] Writing "kubelet.conf" kubeconfig file
+[kubeconfig] Writing "controller-manager.conf" kubeconfig file
+[kubeconfig] Writing "scheduler.conf" kubeconfig file
+[control-plane] Using manifest folder "/etc/kubernetes/manifests"
+[control-plane] Creating static Pod manifest for "kube-apiserver"
+[control-plane] Creating static Pod manifest for "kube-controller-manager"
+[control-plane] Creating static Pod manifest for "kube-scheduler"
+[etcd] Creating static Pod manifest for local etcd in "/etc/kubernetes/manifests"
+[wait-control-plane] Waiting for the kubelet to boot up the control plane as static Pods from directory "/etc/kubernetes/manifests". This can take up to 4m0s
+[apiclient] All control plane components are healthy after 24.502317 seconds
+[upload-config] Storing the configuration used in ConfigMap "kubeadm-config" in the "kube-system" Namespace
+[kubelet] Creating a ConfigMap "kubelet-config-1.15" in namespace kube-system with the configuration for the kubelets in the cluster
+[upload-certs] Skipping phase. Please see --upload-certs
+[mark-control-plane] Marking the node cuky as control-plane by adding the label "node-role.kubernetes.io/master=''"
+[mark-control-plane] Marking the node cuky as control-plane by adding the taints [node-role.kubernetes.io/master:NoSchedule]
+[bootstrap-token] Using token: ftcc9l.hwvqfy6qyj3an4o8
+[bootstrap-token] Configuring bootstrap tokens, cluster-info ConfigMap, RBAC Roles
+[bootstrap-token] configured RBAC rules to allow Node Bootstrap tokens to post CSRs in order for nodes to get long term certificate credentials
+[bootstrap-token] configured RBAC rules to allow the csrapprover controller automatically approve CSRs from a Node Bootstrap Token
+[bootstrap-token] configured RBAC rules to allow certificate rotation for all node client certificates in the cluster
+[bootstrap-token] Creating the "cluster-info" ConfigMap in the "kube-public" namespace
+[addons] Applied essential addon: CoreDNS
+[addons] Applied essential addon: kube-proxy
+
+Your Kubernetes control-plane has initialized successfully!
+
+To start using your cluster, you need to run the following as a regular user:
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+You should now deploy a pod network to the cluster.
+Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+  https://kubernetes.io/docs/concepts/cluster-administration/addons/
+
+Then you can join any number of worker nodes by running the following on each as root:
+
+kubeadm join 192.168.42.229:6443 --token ftcc9l.hwvqfy6qyj3an4o8 \
+    --discovery-token-ca-cert-hash sha256:b38da866a3daeccd6ef7ebe2690c53a2b9a72db4e9ffebeb161a8ddb3b9ac94c 
+root@cuky:/usr/local/bin# 
+```
+
+
+### Installing a pod network add-on
+Pod Network : Pod 간의 통신을 위함
+
+
+```
+root@cuky:~/.kube# 
+root@cuky:~/.kube# kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+serviceaccount/weave-net created
+clusterrole.rbac.authorization.k8s.io/weave-net created
+clusterrolebinding.rbac.authorization.k8s.io/weave-net created
+role.rbac.authorization.k8s.io/weave-net created
+rolebinding.rbac.authorization.k8s.io/weave-net created
+daemonset.extensions/weave-net created
+root@cuky:~/.kube# kubectl describe nodes
+
+```
+
+클러스터 노드 정보 확인
+```
+root@cuky:~/.kube# kubectl get nodes
+NAME   STATUS   ROLES    AGE   VERSION
+cuky   Ready    master   80m   v1.15.0
+root@cuky:~/.kube# 
+
+```
