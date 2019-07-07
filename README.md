@@ -579,3 +579,105 @@ cuky   Ready    master   80m   v1.15.0
 root@cuky:~/.kube# 
 
 ```
+
+Dash보드 접속하기 - 토큰만들고 사용
+```
+root@cuky:/home/cuky/dev# 
+root@cuky:/home/cuky/dev# kubectl -n kube-system describe $(kubectl -n kube-system \
+> get secret -n kube-system -o name | grep namespace) | grep token
+Name:         namespace-controller-token-ndc7p
+Type:  kubernetes.io/service-account-token
+token:      eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJrdWJlLXN5c3RlbSIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJuYW1lc3BhY2UtY29udHJvbGxlci10b2tlbi1uZGM3cCIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50Lm5hbWUiOiJuYW1lc3BhY2UtY29udHJvbGxlciIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6IjI2N2I4YTE4LTczMDUtNGY0My04NmViLTljMDg0ZTQ0NDlkNCIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDprdWJlLXN5c3RlbTpuYW1lc3BhY2UtY29udHJvbGxlciJ9.oJaqBuqAxYd5LGykIehv89_FayLBemWIIMutUxXXSXadNhQF3ugYEG7mVppiGu9-gJbqUnBnfcrQp82UvtjihdV7mSkHAJhcoWb-06D0-QcxROdqmsnpHtl_KfqQWQAk49k8HJpfir7tYwhsTEbvoFb1XpbgHxoTJEafmRAKfUb_9fmzYODglFjwbx-3RmCuM1YHnfRYFM3PxmxqCpvA0Ds38oF1USRb7x3AB9ywEnwfHgv86xIe-ei7WXdKnJgf--D_b60UVgMlhlM4GNom29PALWJ9QMluho-0lZZ3K3ERjEi_KwGIjRvMQ-sMjfvzTmrRTF2gJZjnG4SJ8YEJ6Q
+root@cuky:/home/cuky/dev# kubectl proxy
+Starting to serve on 127.0.0.1:8001
+```
+
+
+
+### 노드 확인하고 cpu / memory 정보 보기
+```
+root@cuky:/home/cuky/dev/ch05/ch05_06_1# kubectl get nodes
+NAME   STATUS   ROLES    AGE    VERSION
+cuky   Ready    master   130m   v1.15.0
+root@cuky:/home/cuky/dev/ch05/ch05_06_1# 
+root@cuky:/home/cuky/dev/ch05/ch05_06_1# 
+root@cuky:/home/cuky/dev/ch05/ch05_06_1# kubectl describe node cuky
+Name:               cuky
+Roles:              master
+Labels:             beta.kubernetes.io/arch=amd64
+                    beta.kubernetes.io/os=linux
+                    kubernetes.io/arch=amd64
+                    kubernetes.io/hostname=cuky
+                    kubernetes.io/os=linux
+                    node-role.kubernetes.io/master=
+Annotations:        flannel.alpha.coreos.com/backend-data: {"VtepMAC":"0e:f4:5d:8f:80:9d"}
+                    flannel.alpha.coreos.com/backend-type: vxlan
+                    flannel.alpha.coreos.com/kube-subnet-manager: true
+                    flannel.alpha.coreos.com/public-ip: 192.168.42.229
+                    kubeadm.alpha.kubernetes.io/cri-socket: /var/run/dockershim.sock
+                    node.alpha.kubernetes.io/ttl: 0
+                    volumes.kubernetes.io/controller-managed-attach-detach: true
+CreationTimestamp:  Thu, 04 Jul 2019 15:59:07 +0900
+Taints:             node-role.kubernetes.io/master:NoSchedule
+Unschedulable:      false
+Conditions:
+  Type                 Status  LastHeartbeatTime                 LastTransitionTime                Reason                       Message
+  ----                 ------  -----------------                 ------------------                ------                       -------
+  NetworkUnavailable   False   Thu, 04 Jul 2019 17:19:12 +0900   Thu, 04 Jul 2019 17:19:12 +0900   WeaveIsUp                    Weave pod has set this
+  MemoryPressure       False   Thu, 04 Jul 2019 18:08:58 +0900   Thu, 04 Jul 2019 15:59:04 +0900   KubeletHasSufficientMemory   kubelet has sufficient memory available
+  DiskPressure         False   Thu, 04 Jul 2019 18:08:58 +0900   Thu, 04 Jul 2019 15:59:04 +0900   KubeletHasNoDiskPressure     kubelet has no disk pressure
+  PIDPressure          False   Thu, 04 Jul 2019 18:08:58 +0900   Thu, 04 Jul 2019 15:59:04 +0900   KubeletHasSufficientPID      kubelet has sufficient PID available
+  Ready                True    Thu, 04 Jul 2019 18:08:58 +0900   Thu, 04 Jul 2019 17:19:26 +0900   KubeletReady                 kubelet is posting ready status. AppArmor enabled
+Addresses:
+  InternalIP:  192.168.42.229
+  Hostname:    cuky
+Capacity:
+ cpu:                8
+ ephemeral-storage:  41152736Ki
+ hugepages-2Mi:      0
+ memory:             6000224Ki
+ pods:               110
+Allocatable:
+ cpu:                8
+ ephemeral-storage:  37926361435
+ hugepages-2Mi:      0
+ memory:             5897824Ki
+ pods:               110
+System Info:
+ Machine ID:                 eb45fac5bd744ecebe222123bb0d3149
+ System UUID:                7b3e68a8-7ee3-40bd-9af6-d8ea68e7d554
+ Boot ID:                    224b6fc1-15b8-4da9-8cd7-3eee1759064c
+ Kernel Version:             4.18.0-15-generic
+ OS Image:                   Ubuntu 18.04.2 LTS
+ Operating System:           linux
+ Architecture:               amd64
+ Container Runtime Version:  docker://18.9.6
+ Kubelet Version:            v1.15.0
+ Kube-Proxy Version:         v1.15.0
+PodCIDR:                     10.244.0.0/24
+Non-terminated Pods:         (10 in total)
+  Namespace                  Name                                     CPU Requests  CPU Limits  Memory Requests  Memory Limits  AGE
+  ---------                  ----                                     ------------  ----------  ---------------  -------------  ---
+  kube-system                coredns-5c98db65d4-wbcw8                 100m (1%)     0 (0%)      70Mi (1%)        170Mi (2%)     130m
+  kube-system                coredns-5c98db65d4-wbz7f                 100m (1%)     0 (0%)      70Mi (1%)        170Mi (2%)     130m
+  kube-system                etcd-cuky                                0 (0%)        0 (0%)      0 (0%)           0 (0%)         129m
+  kube-system                kube-apiserver-cuky                      250m (3%)     0 (0%)      0 (0%)           0 (0%)         129m
+  kube-system                kube-controller-manager-cuky             200m (2%)     0 (0%)      0 (0%)           0 (0%)         129m
+  kube-system                kube-flannel-ds-z796j                    100m (1%)     100m (1%)   50Mi (0%)        50Mi (0%)      50m
+  kube-system                kube-proxy-b6tg7                         0 (0%)        0 (0%)      0 (0%)           0 (0%)         130m
+  kube-system                kube-scheduler-cuky                      100m (1%)     0 (0%)      0 (0%)           0 (0%)         129m
+  kube-system                kubernetes-dashboard-54f679684c-c8857    0 (0%)        0 (0%)      0 (0%)           0 (0%)         34m
+  kube-system                weave-net-qxg2b                          20m (0%)      0 (0%)      0 (0%)           0 (0%)         50m
+Allocated resources:
+  (Total limits may be over 100 percent, i.e., overcommitted.)
+  Resource           Requests    Limits
+  --------           --------    ------
+  cpu                870m (10%)  100m (1%)
+  memory             190Mi (3%)  390Mi (6%)
+  ephemeral-storage  0 (0%)      0 (0%)
+Events:
+  Type    Reason     Age   From           Message
+  ----    ------     ----  ----           -------
+  Normal  NodeReady  50m   kubelet, cuky  Node cuky status is now: NodeReady
+
+```
